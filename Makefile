@@ -1,0 +1,2 @@
+test:
+	dzil  test

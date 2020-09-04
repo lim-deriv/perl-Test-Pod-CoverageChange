@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: deriv/dzil:latest
+        entrypoint: /bin/bash
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cpanfile-{{ arch }}-{{ checksum "cpanfile" }}
+      - run:
+          name: Install deps
+          command: |
+            cpanm -l deps --installdeps -n .
+      - save_cache:
+          key: cpanfile-{{ arch }}-{{ checksum "cpanfile" }}
+          paths:
+            - deps
+      - run:
+          name: Run test
+          command: |
+            export PERL5LIB=$(pwd)/deps/lib/perl5:$(pwd)/deps/lib/perl5/$(perl -MConfig -le'print $Config{archname}'):$PERL5LIB
+            dzil test
+workflows:
+  version: 2
+  build-workflow:
+    jobs:
+      - build
