@@ -1,0 +1,34 @@
+name: lim-deriv/perl-Test-Pod-CoverageChange/build-workflow
+on:
+  push:
+    branches:
+    - '*'
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+    strategy:
+      matrix:
+        perl-version:
+        - '5.22'
+        - '5.24'
+        - '5.26'
+        - '5.28'
+        - '5.30'
+        - '5.32'
+        - '5.34'
+    steps:
+    - uses: actions/checkout@v3.0.0
+    - name: Install Dzil
+      run: cpm install -g --no-test Dist::Zilla Dist::Zilla::App::Command::cover ExtUtils::MakeMaker
+    - name: Install dzil author dependencies
+      run: |
+        cpm install -g \
+        -w 2 \
+        --mirror=http://cpan.cpantesters.org/ $(dzil authordeps --missing)
+    - name: Install dist deps
+      run: dzil listdeps --author --missing --cpanm-versions | xargs cpanm -n
+    - name: Run Tests
+      run: dzil smoke --release --author && dzil cover -test && dzil xtest
