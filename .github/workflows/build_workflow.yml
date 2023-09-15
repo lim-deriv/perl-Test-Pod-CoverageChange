@@ -1,4 +1,4 @@
-git name: Build workflow
+name: Build workflow
 run-name: Build workflow
 on:
   push:
